@@ -10,3 +10,4 @@ Todo
 
 * mock test
 * environment vars for creds (will enable CI)
+* proper docstrings
