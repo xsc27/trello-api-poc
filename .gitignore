@@ -78,3 +78,5 @@ tags
 .DS_Store
 .AppleDouble
 .LSOverride
+
+tests/creds.py
