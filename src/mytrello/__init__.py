@@ -10,7 +10,7 @@ from mytrello import exceptions
 
 __all__: List[str] = ["api"]
 
-__version__: Optional[str]
+__version__: Optional[str] = None
 
 try:
     __version__ = pkg_resources.get_distribution(__name__).version
