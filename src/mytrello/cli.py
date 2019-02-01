@@ -16,16 +16,17 @@ Options:
   --drifting    Drifting mine.
 """
 
-import sys
 import logging
+import sys
+from typing import Optional
 
+import pkg_resources
 from docopt import docopt
 
 from mytrello.utils import config_logging
-from typing import Optional
-import pkg_resources
 
 LOGGER: logging.Logger = logging.getLogger(__package__)
+config_logging(LOGGER, log_file=f"{__package__}.log")
 
 
 version: Optional[str] = None
@@ -37,9 +38,7 @@ except pkg_resources.DistributionNotFound:
 
 
 def main():
-    config_logging(LOGGER, log_file=f"{__package__}.log")
     arguments = docopt(__doc__, version=version, options_first=True)
-    LOGGER.error("Not Implemented")
     LOGGER.info("Arguments received: %s", arguments)
 
 

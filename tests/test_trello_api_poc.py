@@ -7,12 +7,7 @@
 from pprint import pprint
 import pytest
 
-# dict({
-#     "key": <KEY>,
-#     "token": <TOKEN>
-# })
 import requests.exceptions
-from .creds import CREDS
 import mytrello
 
 """
@@ -32,30 +27,21 @@ Lists:
 Labels:
 - 'color': 'orange'
   'id': '5c53e48991d0c2ddc5c4cab8'
-  'idBoard': '5c53e48984ab033e7e5477ed'
-  'name': ''
 - 'color': 'green'
   'id': '5c53e48991d0c2ddc5c4cab9'
-  'idBoard': '5c53e48984ab033e7e5477ed'
- 'name': ''
 - 'color': 'yellow'
   'id': '5c53e48991d0c2ddc5c4caba'
-  'idBoard': '5c53e48984ab033e7e5477ed'
 - 'color': 'red'
   'id': '5c53e48991d0c2ddc5c4cabd'
-  'idBoard': '5c53e48984ab033e7e5477ed'
 - 'color': 'purple'
   'id': '5c53e48991d0c2ddc5c4cac0'
-  'idBoard': '5c53e48984ab033e7e5477ed'
 - 'color': 'blue'
   'id': '5c53e48991d0c2ddc5c4cac1'
-  'idBoard': '5c53e48984ab033e7e5477ed'
-
 """
 
 @pytest.fixture
 def client():
-    return mytrello.Client(**CREDS)
+    return mytrello.Client()
 
 class TestClient:
     def test_bad(self):
@@ -93,6 +79,12 @@ class TestBoards:
         pprint(labels)
         assert all(l in labels[0].properties for l in ("color", "id", "idBoard", "name"))
 
+    def test200_create_error(self, client):
+        trello_obj = mytrello.api.Boards(client, "5c53e48984ab033e7e5477ed")
+        trello_obj2 = trello_obj.create()
+        # add log check
+        assert trello_obj2 is None
+
 
 class TestLists:
     def test_get(self, client):
@@ -122,6 +114,17 @@ class TestLists:
         with pytest.raises(requests.exceptions.HTTPError):
             trello_card2.get()
 
+    def test_add_card_noname_nolabel(self, client):
+        trello_obj = mytrello.api.Lists(client, "5c53e48984ab033e7e5477ee")
+        trello_card1 = trello_obj.add_card()
+        trello_card2 = mytrello.api.Cards(client, objectid=trello_card1.id)
+        assert trello_card1.properties["url"] == trello_card2.properties["url"]
+        response = trello_card1.delete()
+        assert not trello_card1.id
+        assert response == {'limits': {}}
+        with pytest.raises(requests.exceptions.HTTPError):
+            trello_card2.get()
+
 
 class TestLabels:
     def test_get(self, client):
@@ -132,15 +135,10 @@ class TestLabels:
 
 class TestCards:
     def test_add_comment(self, client):
-        # trello_list = mytrello.api.Lists(client, "5c53e48984ab033e7e5477ee")
-        # trello_obj = trello_list.add_card(name="Add Comment", labelids=["5c53e48991d0c2ddc5c4cabd"])
         trello_obj = mytrello.api.Cards(client, objectid="5c540df68c034f03b7c51d5a")
         text = "Comment from pytest"
         trello_action = trello_obj.add_comment(text)
-        # pprint(trello_action.properties)
         assert trello_action.properties["type"] == "commentCard"
-        # pprint(trello_obj.properties)
-        # trello_card_check = mytrello.api.Cards(client, trello_obj.id)
         trello_action_check = mytrello.api.Actions(client, trello_action.id)
         assert trello_action_check.properties["data"]["text"] == text
         trello_action.delete()

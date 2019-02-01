@@ -1,6 +1,6 @@
 import logging
 from abc import ABC
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Union
 
 from mytrello.client import Client
 
@@ -8,7 +8,9 @@ from mytrello.client import Client
 class Resource(ABC):
     _resource: str
 
-    def __init__(self, client: Client, objectid: Optional[str] = None, **kwargs) -> None:
+    def __init__(
+        self, client: Client, objectid: Optional[str] = None, **kwargs
+    ) -> None:
         """
         Base class to make calls to any resource.
 
@@ -44,12 +46,12 @@ class Resource(ABC):
     def post(self, path: Optional[str] = None, **kwargs) -> Optional[Dict[str, str]]:
         return self._request("POST", path, **kwargs)
 
-    def put(self, path: Optional[str] = None, **kwargs) -> Optional[Dict[str, str]]:
-        return self._request("PUT", path, **kwargs)
+    # Method not used at this time
+    # def put(self, path: Optional[str] = None, **kwargs) -> Optional[Dict[str, str]]:
+    #     return self._request("PUT", path, **kwargs)
 
 
 class TrelloObject(Resource):
-
     def __init__(
         self,
         client: Client,
@@ -157,14 +159,19 @@ class Lists(TrelloObject):
     _resource: str = "lists"
 
     def add_card(
-        self, name: Optional[str] = None, labelids: List[str] = None, **kwargs
+        self,
+        name: Optional[str] = None,
+        labelids: Optional[Union[List[str], str]] = None,
+        **kwargs
     ):
         properties: Dict[str, str] = dict()
         properties.update(kwargs)
         if name:
             properties["name"] = name
         if labelids:
-            properties["idLabels"] = ",".join(labelids)
+            properties["idLabels"] = (
+                ",".join(labelids) if isinstance(labelids, (list,)) else labelids
+            )
         properties["idList"] = self.id
 
         card = Cards(self.client, properties=properties)

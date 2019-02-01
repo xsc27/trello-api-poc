@@ -1,21 +1,23 @@
-from typing import Dict
 import logging
+import os
 import urllib.parse
+from typing import Dict, Optional
 
 import requests
 
 
 class Client:
-    __creds: Dict[str, str]
+    __creds: Dict[str, str] = dict()
 
     def __init__(
         self,
-        key: str,
-        token: str,
+        key: Optional[str] = None,
+        token: Optional[str] = None,
         api_endpoint: str = "api.trello.com",
         api_version: str = "1",
     ):
-        self.__creds = {"key": key, "token": token}
+        self.__creds["key"] = key if key else os.environ["TRELLO_KEY"]
+        self.__creds["token"] = token if key else os.environ["TRELLO_TOKEN"]
         self.api_endpoint = api_endpoint
         self.api_version = api_version
 

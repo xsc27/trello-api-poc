@@ -1,9 +1,9 @@
 """Utils Module"""
-from typing import Optional
 import logging
 import logging.handlers
 import os
 import sys
+from typing import Optional
 
 
 def config_logging(
