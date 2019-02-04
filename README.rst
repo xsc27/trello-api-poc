@@ -15,24 +15,24 @@ Usage
 
 Set your credentials as environment variables: TRELLO_KEY, TRELLO_TOKEN.
 
-```bash
-mytrello [options] <boardid> <column>
+.. code-block:: bash
 
-Options:
-  -n CARDNAME --name=CARDNAME       Give new card name (text)
-  -c COMMENT --comment=COMMENT      Add a comment (text)
-  -l LABELID --label=LABELID        Attach labels, csv (resource id)
-  -v --version     Show version
-  -h --help     Show this screen
-```
+   mytrello [options] <boardid> <column>
+
+   Options:
+     -n CARDNAME --name=CARDNAME       Give new card name (text)
+     -c COMMENT --comment=COMMENT      Add a comment (text)
+     -l LABELID --label=LABELID        Attach labels, csv (resource id)
+     -v --version     Show version
+     -h --help     Show this screen
 
 Example
 ^^^^^^^
 
 This command:
-```bash
-mytrello -l 5c53e48991d0c2ddc5c4cabd -c "cli test" -n "CLI Test" 5c53e48984ab033e7e5477ed 2
-```
+.. code-block:: bash
+
+   mytrello -l 5c53e48991d0c2ddc5c4cabd -c "cli test" -n "CLI Test" 5c53e48984ab033e7e5477ed 2
 
 created:
 https://trello.com/c/bPMFJCvA
