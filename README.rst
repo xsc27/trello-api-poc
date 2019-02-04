@@ -13,6 +13,8 @@ Currently the ui exposes a fucntion to add a new card on board in nth list.
 Usage
 -----
 
+Set your credentials as environment variables: TRELLO_KEY, TRELLO_TOKEN.
+
 ```bash
 mytrello [options] <boardid> <column>
 
@@ -39,6 +41,7 @@ https://trello.com/c/bPMFJCvA
 Todo
 ----
 
+* fix type hints
 * mock test
-* environment vars for creds (will enable CI)
 * proper docstrings
+* add more authentication options, i.e. Oauth
