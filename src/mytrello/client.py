@@ -21,7 +21,7 @@ class Client:
         self.api_endpoint = api_endpoint
         self.api_version = api_version
 
-    def _raise_for_status(self, response):
+    def _raise_for_status(self, response):  # pylint: disable=no-self-use
         """Raises stored :class:`HTTPError`, if one occurred."""
 
         http_error_msg: str = f"{response.status_code}"

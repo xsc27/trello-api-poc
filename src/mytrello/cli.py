@@ -1,45 +1,51 @@
-"""Naval Fate.
+"""mytrello
+Add a new card on board in nth list.
 
-Usage:
-  naval_fate.py ship new <name>...
-  naval_fate.py ship <name> move <x> <y> [--speed=<kn>]
-  naval_fate.py ship shoot <x> <y>
-  naval_fate.py mine (set|remove) <x> <y> [--moored | --drifting]
-  naval_fate.py (-h | --help)
-  naval_fate.py --version
+Usage: mytrello [options] <boardid> <column>
 
 Options:
-  -h --help     Show this screen.
-  --version     Show version.
-  --speed=<kn>  Speed in knots [default: 10].
-  --moored      Moored (anchored) mine.
-  --drifting    Drifting mine.
+  -n CARDNAME --name=CARDNAME       Give new card name (text)
+  -c COMMENT --comment=COMMENT      Add a comment (text)
+  -l LABELID --label=LABELID        Attach labels, csv (resource id)
+  -v --version     Show version
+  -h --help     Show this screen
 """
 
 import logging
-import sys
 from typing import Optional
 
 import pkg_resources
 from docopt import docopt
 
 from mytrello.utils import config_logging
+import mytrello.ui
 
 LOGGER: logging.Logger = logging.getLogger(__package__)
 config_logging(LOGGER, log_file=f"{__package__}.log")
 
 
-version: Optional[str] = None
+VERSION: Optional[str] = None
 
 try:
-    version = pkg_resources.get_distribution(__package__).version
+    VERSION = pkg_resources.get_distribution(__package__).version
 except pkg_resources.DistributionNotFound:
-    version = None
+    VERSION = None
 
 
 def main():
-    arguments = docopt(__doc__, version=version, options_first=True)
+    arguments = docopt(__doc__, version=VERSION, options_first=False)
     LOGGER.info("Arguments received: %s", arguments)
+    new_card_params = dict(
+        {"boardid": arguments["<boardid>"], "column": arguments["<column>"]}
+    )
+    if arguments["--name"]:
+        new_card_params["cardname"] = arguments["--name"]
+    if arguments["--label"]:
+        new_card_params["labelids"] = arguments["--label"]
+    if arguments["--comment"]:
+        new_card_params["comment"] = arguments["--comment"]
+
+    mytrello.ui.add_card(**new_card_params)
 
 
 if __name__ == "__main__":

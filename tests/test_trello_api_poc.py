@@ -1,14 +1,17 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-# pylint: disable=no-self-use, invalid-name
+# pylint: disable=no-self-use, redefined-outer-name, pointless-string-statement
 
 """Tests for mytrello package."""
 
-from pprint import pprint
-import pytest
+from datetime import datetime
 
+import pytest
 import requests.exceptions
+
 import mytrello
+import mytrello.ui
+
 
 """
 Board API-POC:
@@ -34,31 +37,40 @@ Labels:
 - 'color': 'red'
   'id': '5c53e48991d0c2ddc5c4cabd'
 - 'color': 'purple'
-  'id': '5c53e48991d0c2ddc5c4cac0'
+ 'id': '5c53e48991d0c2ddc5c4cac0'
 - 'color': 'blue'
   'id': '5c53e48991d0c2ddc5c4cac1'
 """
+
 
 @pytest.fixture
 def client():
     return mytrello.Client()
 
+
 class TestClient:
     def test_bad(self):
-        client = mytrello.Client("badkey", "badtoken")
+        badclient = mytrello.Client("badkey", "badtoken")
         with pytest.raises(requests.exceptions.HTTPError):
-            client.request("GET", "badresource")
+            badclient.request("GET", "badresource")
 
     def test_search(self, client):
         response = client.request("GET", "search", query="API")
         assert isinstance(response, dict)
-        assert all(k in response for k in ("boards", "cards", "members", "options", "organizations"))
+        assert all(
+            k in response
+            for k in ("boards", "cards", "members", "options", "organizations")
+        )
+
 
 class TestBoards:
     def test110_create(self, client):
         trello_obj1 = mytrello.api.Boards(client, properties={"name": "pytest"})
         assert isinstance(trello_obj1.properties, dict)
-        assert all(k in trello_obj1.properties for k in ("closed", "desc", "id", "name", "labelNames", "url"))
+        assert all(
+            k in trello_obj1.properties
+            for k in ("closed", "desc", "id", "name", "labelNames", "url")
+        )
         trello_obj2 = mytrello.api.Boards(client, objectid=trello_obj1.id)
         assert trello_obj1.id == trello_obj2.id
         assert trello_obj1.properties["url"] == trello_obj2.properties["url"]
@@ -70,14 +82,18 @@ class TestBoards:
         trello_obj = mytrello.api.Boards(client, "5c53e48984ab033e7e5477ed")
         lists = trello_obj.get_lists()
         assert isinstance(lists, list)
-        assert all(k in lists[0].properties for k in ("closed", "id", "idBoard", "name", "pos", "subscribed"))
+        assert all(
+            k in lists[0].properties
+            for k in ("closed", "id", "idBoard", "name", "pos", "subscribed")
+        )
 
     def test130_get_labels(self, client):
         trello_obj = mytrello.api.Boards(client, "5c53e48984ab033e7e5477ed")
         labels = trello_obj.get_labels()
         assert isinstance(labels, list)
-        pprint(labels)
-        assert all(l in labels[0].properties for l in ("color", "id", "idBoard", "name"))
+        assert all(
+            l in labels[0].properties for l in ("color", "id", "idBoard", "name")
+        )
 
     def test200_create_error(self, client):
         trello_obj = mytrello.api.Boards(client, "5c53e48984ab033e7e5477ed")
@@ -90,7 +106,10 @@ class TestLists:
     def test_get(self, client):
         trello_obj = mytrello.api.Lists(client, "5c53e48984ab033e7e5477ee")
         assert isinstance(trello_obj.properties, dict)
-        assert all(k in trello_obj.properties for k in ("closed", "id", "idBoard", "name", "pos"))
+        assert all(
+            k in trello_obj.properties
+            for k in ("closed", "id", "idBoard", "name", "pos")
+        )
 
     def test_add_card_name(self, client):
         card_name: str = "pytest_add_card_name"
@@ -99,18 +118,20 @@ class TestLists:
         assert trello_card.properties["name"] == card_name
         response = trello_card.delete()
         assert not trello_card.id
-        assert response == {'limits': {}}
+        assert response == {"limits": {}}
         with pytest.raises(requests.exceptions.HTTPError):
             trello_card.get()
 
     def test_add_card_labels(self, client):
         trello_obj = mytrello.api.Lists(client, "5c53e48984ab033e7e5477ee")
-        trello_card1 = trello_obj.add_card(name="label", labelids=["5c53e48991d0c2ddc5c4cabd"])
+        trello_card1 = trello_obj.add_card(
+            name="label", labelids=["5c53e48991d0c2ddc5c4cabd"]
+        )
         trello_card2 = mytrello.api.Cards(client, objectid=trello_card1.id)
         assert trello_card1.properties["url"] == trello_card2.properties["url"]
         response = trello_card1.delete()
         assert not trello_card1.id
-        assert response == {'limits': {}}
+        assert response == {"limits": {}}
         with pytest.raises(requests.exceptions.HTTPError):
             trello_card2.get()
 
@@ -121,7 +142,7 @@ class TestLists:
         assert trello_card1.properties["url"] == trello_card2.properties["url"]
         response = trello_card1.delete()
         assert not trello_card1.id
-        assert response == {'limits': {}}
+        assert response == {"limits": {}}
         with pytest.raises(requests.exceptions.HTTPError):
             trello_card2.get()
 
@@ -130,7 +151,9 @@ class TestLabels:
     def test_get(self, client):
         trello_obj = mytrello.api.Labels(client, "5c53e48991d0c2ddc5c4cabd")
         assert isinstance(trello_obj.properties, dict)
-        assert all(l in trello_obj.properties for l in ("color", "id", "idBoard", "name"))
+        assert all(
+            l in trello_obj.properties for l in ("color", "id", "idBoard", "name")
+        )
 
 
 class TestCards:
@@ -144,3 +167,21 @@ class TestCards:
         trello_action.delete()
         with pytest.raises(requests.exceptions.HTTPError):
             trello_action_check.get()
+
+
+class TestUi:
+    def test_add_card(self, client):
+        """
+        Creates card through UI module, verifies a card was created
+        and not deleted for manual inspection
+        """
+        text: str = "Comment from pytest"
+        trello_card1 = mytrello.ui.add_card(
+            "5c53e48984ab033e7e5477ed",
+            3,
+            str(datetime.utcnow()),
+            "5c53e48991d0c2ddc5c4cab9",
+            text,
+        )
+        trello_card2 = mytrello.api.Cards(client, objectid=trello_card1.id)
+        assert trello_card1.properties["url"] == trello_card2.properties["url"]

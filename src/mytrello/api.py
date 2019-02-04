@@ -8,9 +8,7 @@ from mytrello.client import Client
 class Resource(ABC):
     _resource: str
 
-    def __init__(
-        self, client: Client, objectid: Optional[str] = None, **kwargs
-    ) -> None:
+    def __init__(self, client: Client, objectid: Optional[str] = None) -> None:
         """
         Base class to make calls to any resource.
 
@@ -22,7 +20,7 @@ class Resource(ABC):
             Id of resource to manipulate. If none given, a new resource will be created.
         """
         self.client: Client = client
-        self.id = objectid if objectid else ""
+        self.id = objectid if objectid else ""  # pylint: disable=invalid-name
 
     def _path(self, resource: str, path: Optional[str] = None) -> str:
         if not path:
@@ -37,8 +35,8 @@ class Resource(ABC):
         response = self.client.request(method, url_path, **kwargs)
         return response
 
-    def delete(self, path: Optional[str] = None, **kwargs) -> Optional[Dict[str, str]]:
-        return self._request("DELETE", path, **kwargs)
+    def delete(self, **kwargs) -> Optional[Dict[str, str]]:
+        return self._request("DELETE", None, **kwargs)
 
     def get(self, path: Optional[str] = None, **kwargs) -> Optional[Dict[str, str]]:
         return self._request("GET", path, **kwargs)
@@ -69,7 +67,8 @@ class TrelloObject(Resource):
         objectid
             Id of resource to manipulate. If none given, a new resource will be created.
         properties
-           Properties of resource to avoid making an API call or properties to apply if creating a resource.
+           Properties of resource to avoid making an API call
+           or properties to apply if creating a resource.
         """
         super().__init__(client, objectid)
         if objectid:
